@@ -1,0 +1,36 @@
+<div class="w-full flex items-center gap-2 pt-2 animate-fade-in mb-4">
+    <div
+        class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-primary/20 bg-accent/50 text-muted-foreground border border-border/40">
+        @if (userProfilePicture()) {
+        <img [src]="userProfilePicture()" alt="Profile" class="w-full h-full object-cover" />
+        } @else {
+        <div class="w-full h-full p-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+            </svg>
+        </div>
+        }
+    </div>
+    <div class="flex-1 relative">
+        <input type="text" [placeholder]="placeholder()" #commentInput [value]="commentText()"
+            (input)="commentText.set(commentInput.value)" (keyup.enter)="handleCommentSubmit()" class="flex w-full rounded-full border ring-offset-background transition-all duration-300
+               placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm
+               border-transparent bg-secondary focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary
+               h-9 text-sm px-3 pr-10 rtl:pr-3 rtl:pl-10" />
+        <button type="button" (click)="handleCommentSubmit()" [disabled]="!commentText().trim()" class="absolute right-1 rtl:right-auto rtl:left-1 top-1/2 -translate-y-1/2
+               inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg
+               text-sm font-medium ring-offset-background transition-all duration-300 cursor-pointer
+               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+               disabled:pointer-events-none disabled:opacity-50
+               hover:bg-accent hover:text-accent-foreground active:scale-[0.98] h-8 w-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 pointer-events-none shrink-0 text-primary"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="m22 2-7 20-4-9-9-4Z" />
+                <path d="M22 2 11 13" />
+            </svg>
+        </button>
+    </div>
+</div>

@@ -1,0 +1,160 @@
+.story-backdrop {
+    animation: story-backdrop-in 0.3s ease-out;
+}
+
+@keyframes story-backdrop-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Story Container */
+.story-container {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: 90vh;
+    max-height: 800px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #111;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 25px 80px rgba(0, 0, 0, 0.6);
+    animation: story-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+}
+
+@keyframes story-slide-up {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Progress Bar */
+.story-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 4px;
+    padding: 10px 12px 0;
+    z-index: 10;
+}
+
+.progress-segment {
+    flex: 1;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: white;
+    border-radius: 3px;
+    transition: width 50ms linear;
+}
+
+.progress-fill.completed {
+    width: 100% !important;
+}
+
+/* Header */
+.story-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 24px 16px 20px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+    z-index: 5;
+}
+
+/* Story Media */
+.story-media {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+}
+
+.story-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: story-image-in 0.3s ease-out;
+}
+
+@keyframes story-image-in {
+    from {
+        opacity: 0;
+        transform: scale(1.02);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Tap Zones */
+.tap-zone {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 4;
+    cursor: pointer;
+}
+
+.tap-zone-left {
+    left: 0;
+    width: 35%;
+}
+
+.tap-zone-right {
+    right: 0;
+    width: 65%;
+}
+
+/* Story Counter */
+.story-counter {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    z-index: 5;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .story-container {
+        max-width: 100%;
+        height: 100vh;
+        max-height: none;
+        border-radius: 0;
+    }
+}

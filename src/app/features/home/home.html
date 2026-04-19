@@ -1,0 +1,45 @@
+<app-sidebar />
+<div class="lg:ms-64">
+    <div class="container max-w-2xl mx-auto px-4 py-6">
+
+        <!-- Stories — Card -->
+        <div class="rounded-xl bg-card text-card-foreground shadow-soft transition-all duration-300 mb-6">
+            <div class="p-4">
+                <app-stories-section />
+            </div>
+        </div>
+
+        <!-- Create Post -->
+        <div class="mb-6">
+            <app-create-post-card />
+        </div>
+
+        <div class="space-y-6 flex flex-col items-center min-h-[50vh]">
+            @for (post of posts(); track post.id; let i = $index) {
+            <div class="animate-fade-in-up w-full" [style.animation-delay]="i * 100 + 'ms'">
+                <app-post-card [post]="post" (postDeleted)="onPostDeleted($event)" />
+            </div>
+            }
+
+            @if (isLoading()) {
+            <div class="flex justify-center p-4">
+                <div class="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            </div>
+            } @else if (posts().length === 0) {
+            <div
+                class="flex flex-col items-center justify-center p-12 text-center bg-card rounded-xl border border-border mt-8 w-full">
+                <div class="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-muted-foreground" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 11a9 9 0 0 1 9 9"></path>
+                        <path d="M4 4a16 16 0 0 1 16 16"></path>
+                        <circle cx="5" cy="19" r="1"></circle>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-foreground mb-2">{{ lang.t('feed.noPosts') }}</h3>
+                <p class="text-sm text-muted-foreground max-w-sm">{{ lang.t('feed.noPostsDesc') }}</p>
+            </div>
+            }
+        </div>
+    </div>
+</div>

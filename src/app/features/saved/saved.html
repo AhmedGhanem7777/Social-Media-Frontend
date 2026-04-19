@@ -1,0 +1,209 @@
+<div class="container max-w-4xl mx-auto px-4 py-6" [dir]="lang.direction()">
+
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold">{{ lang.t('saved.title') }}</h1>
+        </div>
+    </div>
+
+    <div class="flex border-b border-border mb-6">
+        @for (tab of tabs(); track tab.id) {
+        <button type="button" (click)="setActiveTab(tab.id)" class="cursor-pointer inline-flex items-center gap-2 px-5 py-3 text-sm font-medium
+                     border-b-2 transition-all duration-200 -mb-px focus-visible:outline-none " [class]="activeTab() === tab.id
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'">
+            @switch (tab.id) {
+            @case ('posts') {
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="7" height="7" x="3" y="3" rx="1" />
+                <rect width="7" height="7" x="14" y="3" rx="1" />
+                <rect width="7" height="7" x="14" y="14" rx="1" />
+                <rect width="7" height="7" x="3" y="14" rx="1" />
+            </svg>
+            }
+            @case ('reels') {
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 2h10" />
+                <path d="M5 6h14" />
+                <rect width="18" height="12" x="3" y="10" rx="2" />
+            </svg>
+            }
+            }
+            {{ tab.label }}
+        </button>
+        }
+    </div>
+
+    @if (isLoading()) {
+    <div class="grid grid-cols-3 gap-1 sm:gap-2">
+        @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="animate-pulse bg-muted rounded-xl" [class]="activeTab() === 'posts' ? 'aspect-square' : 'aspect-[9/16]'">
+        </div>
+        }
+    </div>
+    } @else {
+    @if (activeTab() === 'posts') {
+    <div class="grid grid-cols-3 gap-1 sm:gap-2">
+        @for (item of filteredPosts(); track item.id; let i = $index) {
+        <div class="aspect-square relative group cursor-pointer overflow-hidden rounded-xl animate-scale-in"
+            [style.animation-delay]="i * 50 + 'ms'">
+            @if (item.contentUrl) {
+            <img [src]="item.mediaKind === MediaKind.Video ? (item.thumbnailUrl || item.contentUrl) : item.contentUrl"
+                alt="" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+            @if (item.mediaKind === MediaKind.Video) {
+            <div class="absolute top-2 start-2 z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white/90 drop-shadow-md" viewBox="0 0 24 24"
+                    fill="currentColor">
+                    <path d="m15 12-8.5 5V7L15 12Z" />
+                </svg>
+            </div>
+            }
+            } @else {
+            <div class="w-full h-full bg-muted flex items-center justify-center rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-muted-foreground/20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <circle cx="9" cy="9" r="2" />
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                </svg>
+            </div>
+            }
+
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100
+                            transition-opacity flex flex-col items-center justify-center gap-2">
+                <div class="flex items-center gap-1 text-white font-semibold text-sm">
+                    <div class="flex -space-x-1.5 items-center mr-1">
+                        @for (reaction of item.reactions; track reaction.reactionType) {
+                        <span class="text-base leading-none drop-shadow-sm">{{
+                            getEmojiForReaction(reaction.reactionType)
+                            }}</span>
+                        }
+                    </div>
+                    @if(item.likesCount > 0) {
+                    <span>{{ item.likesCount }}</span>
+                    }
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" (click)="unsave(item.id)" class="cursor-pointer text-xs text-white/80 hover:text-white border border-white/30
+                           hover:border-white rounded-full px-2 py-0.5 transition-colors backdrop-blur-sm">
+                        {{ lang.t('saved.unsave') }}
+                    </button>
+                    <button type="button" (click)="openDetailModal(item.id)" class="cursor-pointer text-xs bg-primary text-primary-foreground hover:bg-primary/90 
+                            rounded-full px-3 py-0.5 transition-colors font-medium">
+                        {{ lang.t('saved.viewPost') || 'View Post' }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="absolute top-2 end-2 w-6 h-6 rounded-full bg-black/40 backdrop-blur-sm
+                            flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-white fill-white" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                </svg>
+            </div>
+
+            <div class="absolute bottom-2 start-2 flex items-center gap-1.5">
+                <div class="w-5 h-5 rounded-full overflow-hidden ring-1 ring-white">
+                    @if (item.profilePicture) {
+                    <img [src]="item.profilePicture" [alt]="item.displayName" class="w-full h-full object-cover" />
+                    } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full p-1 text-muted-foreground bg-muted"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    }
+                </div>
+                <span class="text-white text-xs font-medium truncate max-w-16">{{ item.displayName }}</span>
+            </div>
+        </div>
+        }
+    </div>
+    }
+
+    @if (activeTab() === 'reels') {
+    <div class="grid grid-cols-3 gap-1 sm:gap-2">
+        @for (item of filteredReels(); track item.id; let i = $index) {
+        <div class="aspect-[9/16] relative group cursor-pointer overflow-hidden rounded-xl animate-scale-in"
+            [style.animation-delay]="i * 50 + 'ms'">
+            @if (item.contentUrl) {
+            <img [src]="item.thumbnailUrl || item.contentUrl" alt=""
+                class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+            } @else {
+            <div class="w-full h-full bg-muted flex items-center justify-center rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-muted-foreground/20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m22 8-6 4 6 4V8Z" />
+                    <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+                </svg>
+            </div>
+            }
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/50"></div>
+
+            <div class="absolute top-2 start-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white fill-white" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="0">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+            </div>
+
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100
+                            transition-opacity flex flex-col items-center justify-center gap-2">
+                <button type="button" (click)="unsave(item.id)" class="cursor-pointer text-xs text-white border border-white/50 hover:border-white
+                           rounded-full px-4 py-1 transition-colors backdrop-blur-sm">
+                    {{ lang.t('saved.unsave') }}
+                </button>
+                <button type="button" (click)="openDetailModal(item.id)" class="cursor-pointer text-xs bg-primary text-primary-foreground hover:bg-primary/90 
+                           rounded-full px-5 py-1.5 transition-colors font-bold">
+                    {{ lang.t('saved.viewReel') || 'View Reel' }}
+                </button>
+            </div>
+
+            <div class="absolute bottom-2 start-2 flex items-center gap-1.5">
+                <div class="w-5 h-5 rounded-full overflow-hidden ring-1 ring-white hover:underline cursor-pointer">
+                    @if (item.profilePicture) {
+                    <img [src]="item.profilePicture" [alt]="item.displayName" class="w-full h-full object-cover" />
+                    } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full p-1 text-muted-foreground bg-muted"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    }
+                </div>
+                <span class="text-white text-xs font-medium truncate max-w-16">{{ item.displayName }}</span>
+            </div>
+        </div>
+        }
+    </div>
+    }
+
+    @if (isEmpty()) {
+    <div class="flex flex-col items-center justify-center py-20 gap-4 animate-fade-in">
+        <div class="w-20 h-20 rounded-full bg-muted flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-muted-foreground" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+            </svg>
+        </div>
+        <div class="text-center">
+            <p class="font-semibold">{{ lang.t('saved.emptyTitle') }}</p>
+            <p class="text-sm text-muted-foreground mt-1">{{ lang.t('saved.emptySubtitle') }}</p>
+        </div>
+    </div>
+    }
+    }
+
+    @if (showDetailModal()) {
+    @if (activeTab() === 'posts') {
+    <app-post-detail-modal [postId]="itemId()" (close)="closeDetailModal()"></app-post-detail-modal>
+    } @else {
+    <app-reel-detail-modal [reelId]="itemId()" (close)="closeDetailModal()"></app-reel-detail-modal>
+    }
+    }
+</div>

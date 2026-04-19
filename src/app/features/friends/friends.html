@@ -1,0 +1,385 @@
+<div class="container max-w-4xl mx-auto px-4 py-6" [dir]="lang.direction()">
+
+    <!-- Page Header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold">{{ lang.t('profile.friends') }}</h1>
+        <p class="text-sm text-muted-foreground mt-1">
+            {{ allFriends().length }} {{ lang.t('friends.total') }}
+        </p>
+    </div>
+
+    <!-- Search -->
+    <div class="relative mb-6">
+        <div
+            class="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+            </svg>
+        </div>
+        <input type="search" [placeholder]="lang.t('friends.searchPlaceholder')" (input)="onSearch($event)"
+            [value]="searchQuery()" class="flex w-full rounded-xl border ring-offset-background transition-all duration-300
+                   placeholder:text-muted-foreground focus-visible:outline-none
+                   disabled:cursor-not-allowed disabled:opacity-50 md:text-sm
+                   border-border bg-card h-12 text-base px-5
+                   pl-11 rtl:pl-5 rtl:pr-11
+                   focus-visible:ring-2 focus-visible:ring-primary/50
+                   focus-visible:border-primary/50 focus-visible:shadow-glow" />
+    </div>
+
+    <!-- Search Results -->
+    @if (searchQuery().length > 2) {
+    <div class="mb-8 animate-fade-in">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                </svg>
+                Global Search Results
+            </h2>
+            @if (isLoading()) {
+            <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            }
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            @for (s of searchResults(); track s.userId; let i = $index) {
+            <div class="rounded-xl bg-card text-card-foreground shadow-soft
+                           transition-all duration-300 hover-lift overflow-hidden animate-fade-in-up"
+                [style.animation-delay]="i * 60 + 'ms'">
+                <div class="h-16 bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 relative">
+                    <div class="absolute -bottom-7 left-1/2 -translate-x-1/2">
+                        <div class="w-14 h-14 rounded-full ring-4 ring-card overflow-hidden">
+                            @if (s.profilePicture) {
+                            <img [src]="s.profilePicture" [alt]="s.displayName" class="w-full h-full object-cover" />
+                            } @else {
+                            <div class="w-full h-full bg-muted flex items-center justify-center text-muted-foreground p-2.5
+                                        ring-2 ring-primary/20 hover:ring-primary/50 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-4 pt-9 pb-4 text-center">
+                    <p class="font-semibold text-sm truncate">{{ s.displayName }}</p>
+                    <p class="text-xs text-muted-foreground">@ {{ s.username }}</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                        {{ s.mutualFriends }} {{ lang.t('friends.mutual') }}
+                    </p>
+
+                    <button type="button" (click)="addFriend(s.userId)" class="cursor-pointer w-full mt-3 inline-flex items-center justify-center gap-1.5 whitespace-nowrap
+                                   rounded-lg text-sm font-medium ring-offset-background transition-all duration-300
+                                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                                   disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]
+                                   bg-gradient-primary text-white hover:opacity-90 hover:shadow-glow
+                                   h-9 px-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <line x1="19" x2="19" y1="8" y2="14" />
+                            <line x1="22" x2="16" y1="11" y2="11" />
+                        </svg>
+                        {{ lang.t('friends.addFriend') }}
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+
+        @if (!isLoading() && searchResults().length === 0) {
+        <div class="flex flex-col items-center justify-center py-10 gap-2 text-muted-foreground">
+            <p class="text-sm">No global results found for "{{ searchQuery() }}"</p>
+        </div>
+        }
+    </div>
+
+    <!-- Divider -->
+    <div class="h-px bg-border mb-8"></div>
+    }
+
+    <!-- Tabs -->
+    <div class="flex border-b border-border mb-6">
+        @for (tab of tabs; track tab.id) {
+        @if (tab.id === 'suggestions') {
+        <button type="button" (click)="activeTab.set(tab.id); GetSuggestedFriends()" class="cursor-pointer inline-flex items-center gap-2 px-5 py-3 text-sm font-medium
+                     border-b-2 transition-all duration-200 -mb-px focus-visible:outline-none" [class]="activeTab() === tab.id
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'">
+            {{ tab.label }}
+            @if (tab.badge) {
+            <span class="w-5 h-5 rounded-full bg-accent text-accent-foreground
+                             text-xs font-bold flex items-center justify-center">
+                {{ tab.badge }}
+            </span>
+            }
+        </button>
+        } @else if (tab.id === 'requests') {
+        <button type="button" (click)="activeTab.set(tab.id); GetPendingRequests()" class="cursor-pointer inline-flex items-center gap-2 px-5 py-3 text-sm font-medium
+                     border-b-2 transition-all duration-200 -mb-px focus-visible:outline-none" [class]="activeTab() === tab.id
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'">
+            {{ tab.label }}
+            @if (tab.badge) {
+            <span class="w-5 h-5 rounded-full bg-accent text-accent-foreground
+                             text-xs font-bold flex items-center justify-center">
+                {{ tab.badge }}
+            </span>
+            }
+        </button>
+        } @else if (tab.id === 'all') {
+        <button type="button" (click)="activeTab.set(tab.id); GetMyFriends()" class="cursor-pointer inline-flex items-center gap-2 px-5 py-3 text-sm font-medium
+                     border-b-2 transition-all duration-200 -mb-px focus-visible:outline-none" [class]="activeTab() === tab.id
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'">
+            {{ tab.label }}
+        </button>
+        }
+        }
+    </div>
+
+    <!-- All Friends Tab -->
+    @if (activeTab() === 'all') {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (friend of filteredFriends(); track friend.userId; let i = $index) {
+        <div class="rounded-xl bg-card text-card-foreground shadow-soft
+                       transition-all duration-300 hover-lift overflow-hidden animate-fade-in-up"
+            [style.animation-delay]="i * 60 + 'ms'">
+            <div class="p-4 flex items-center gap-3">
+                <!-- Avatar -->
+                <div class="relative shrink-0">
+                    <div [routerLink]="['/profile', friend.userId]"
+                        class="w-14 h-14 rounded-full ring-2 ring-primary/20 overflow-hidden hover:ring-primary/50 transition-all cursor-pointer">
+                        @if (friend.profilePicture) {
+                        <img [src]="friend.profilePicture" [alt]="friend.displayName"
+                            class="w-full h-full object-cover" />
+                        } @else {
+                        <div class="w-full h-full bg-muted flex items-center justify-center text-muted-foreground p-2.5
+                                    ring-2 ring-primary/20 hover:ring-primary/50 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm truncate">{{ friend.displayName }}</p>
+                    <p class="text-xs text-muted-foreground truncate">@ {{ friend.username }}</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                        {{ friend.mutualFriends }} {{ lang.t('friends.mutual') }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="px-4 pb-4 flex gap-2">
+                <!-- Message -->
+                <button type="button" [routerLink]="['/chat']" [queryParams]="{ userId: friend.userId }" class="cursor-pointer flex-1 inline-flex items-center justify-center gap-1.5 whitespace-nowrap
+                           rounded-lg text-sm font-medium ring-offset-background transition-all duration-300
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                           disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]
+                           bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-glow
+                           h-9 px-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    {{ lang.t('friends.message') }}
+                </button>
+
+                <!-- Unfriend -->
+                <button type="button" (click)="unfriend(friend.userId)" class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg
+                           text-sm font-medium ring-offset-background transition-all duration-300
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                           disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]
+                           hover:bg-destructive/10 hover:text-destructive text-muted-foreground
+                           h-9 w-9" [attr.aria-label]="lang.t('friends.unfriend')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <line x1="17" x2="22" y1="11" y2="11" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+
+    <!-- Empty search result -->
+    @if (filteredFriends().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3 animate-fade-in">
+        <div class="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-muted-foreground" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+            </svg>
+        </div>
+        <p class="text-sm text-muted-foreground">{{ lang.t('friends.noResults') }}</p>
+    </div>
+    }
+    }
+
+    <!-- Friend Requests Tab -->
+    @if (activeTab() === 'requests') {
+    <div class="space-y-3">
+        @for (req of friendRequests(); track req.userId; let i = $index) {
+        <div class="rounded-xl bg-card text-card-foreground shadow-soft
+                       transition-all duration-300 animate-fade-in-up" [style.animation-delay]="i * 60 + 'ms'">
+            <div class="p-4 flex items-center gap-4">
+                <!-- Avatar -->
+                <a [routerLink]="['/profile', req.userId]"
+                    class="cursor-pointer w-14 h-14 rounded-full ring-2 ring-primary/20 overflow-hidden shrink-0">
+                    @if (req.profilePicture) {
+                    <img [src]="req.profilePicture" [alt]="req.displayName" class="w-full h-full object-cover" />
+                    } @else {
+                    <div class="w-full h-full bg-muted flex items-center justify-center text-muted-foreground p-2.5
+                                ring-2 ring-primary/20 hover:ring-primary/50 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                    </div>
+                    }
+                </a>
+
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                    <p [routerLink]="['/profile', req.userId]"
+                        class="cursor-pointer hover:underline font-semibold text-sm">{{ req.displayName }}</p>
+                    <p class="text-xs text-muted-foreground">@{{ req.username }}</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                        {{ req.mutualFriends }} {{ lang.t('friends.mutual') }}
+                    </p>
+
+                    <!-- Action buttons -->
+                    <div class="flex gap-2 mt-3">
+                        <!-- Confirm -->
+                        <button type="button" (click)="acceptRequest(req.userId)" class="cursor-pointer flex-1 inline-flex items-center justify-center gap-1.5 whitespace-nowrap
+                                rounded-lg text-sm font-medium ring-offset-background transition-all duration-300
+                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                                disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]
+                                bg-gradient-primary text-white hover:opacity-90 hover:shadow-glow
+                                h-9 px-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                            {{ lang.t('friends.confirm') }}
+                        </button>
+
+                        <!-- Delete -->
+                        <button type="button" (click)="declineRequest(req.userId)" class="cursor-pointer flex-1 inline-flex items-center justify-center gap-1.5 whitespace-nowrap
+                                rounded-lg text-sm font-medium ring-offset-background transition-all duration-300
+                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                                disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]
+                                bg-secondary text-secondary-foreground hover:bg-secondary/80
+                                h-9 px-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M18 6 6 18" />
+                                <path d="m6 6 12 12" />
+                            </svg>
+                            {{ lang.t('friends.delete') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+        @if (friendRequests().length === 0) {
+        <div class="flex flex-col items-center justify-center py-20 gap-3 animate-fade-in">
+            <div class="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-muted-foreground" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </div>
+            <p class="text-sm text-muted-foreground">{{ lang.t('friends.noRequests') }}</p>
+        </div>
+        }
+    </div>
+    }
+
+    <!-- Suggestions Tab -->
+    @if (activeTab() === 'suggestions') {
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        @for (s of suggestions(); track s.userId; let i = $index) {
+        <div class="rounded-xl bg-card text-card-foreground shadow-soft
+                       transition-all duration-300 hover-lift overflow-hidden animate-fade-in-up"
+            [style.animation-delay]="i * 60 + 'ms'">
+
+            <div class="h-16 bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 relative">
+                <div class="absolute -bottom-7 left-1/2 -translate-x-1/2">
+                    <div class="w-14 h-14 rounded-full ring-4 ring-card overflow-hidden">
+                        @if (s.profilePicture) {
+                        <img [src]="s.profilePicture" [alt]="s.displayName" class="w-full h-full object-cover" />
+                        } @else {
+                        <div class="w-full h-full bg-muted flex items-center justify-center text-muted-foreground p-2.5
+                                    ring-2 ring-primary/20 hover:ring-primary/50 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-4 pt-9 pb-4 text-center">
+                <p class="font-semibold text-sm truncate">{{ s.displayName }}</p>
+                <p class="text-xs text-muted-foreground">@ {{ s.username }}</p>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                    {{ s.mutualFriends }} {{ lang.t('friends.mutual') }}
+                </p>
+
+                <!-- Add friend -->
+                <button type="button" (click)="addFriend(s.userId)" class="cursor-pointer w-full mt-3 inline-flex items-center justify-center gap-1.5 whitespace-nowrap
+                           rounded-lg text-sm font-medium ring-offset-background transition-all duration-300
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                           disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]
+                           bg-gradient-primary text-white hover:opacity-90 hover:shadow-glow
+                           h-9 px-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <line x1="19" x2="19" y1="8" y2="14" />
+                        <line x1="22" x2="16" y1="11" y2="11" />
+                    </svg>
+                    {{ lang.t('friends.addFriend') }}
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+    }
+
+</div>

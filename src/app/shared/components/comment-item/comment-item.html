@@ -1,0 +1,121 @@
+<div class="flex gap-2 group/item" [class.mt-2]="!isReply()" [class.mt-1]="isReply()">
+    <!-- Avatar -->
+    <div class="flex-shrink-0 mt-1">
+        <div [class.w-8]="!isReply()" [class.h-8]="!isReply()" [class.w-7]="isReply()" [class.h-7]="isReply()"
+            (click)="navigateToProfile(comment().userId)"
+            class="rounded-full overflow-hidden border border-border/40 cursor-pointer hover:opacity-90 transition-opacity">
+            @if (comment().profilePicture) {
+            <img [src]="comment().profilePicture" [alt]="comment().displayName" class="w-full h-full object-cover" />
+            } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full p-1.5 text-muted-foreground"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+            </svg>
+            }
+        </div>
+    </div>
+
+    <!-- Comment Content -->
+    <div class="flex-1 min-w-0">
+        <!-- Bubble -->
+        <div class="inline-block max-w-full">
+            <div class="bg-secondary px-3 py-2 rounded-2xl relative">
+                <p (click)="navigateToProfile(comment().userId)"
+                    class="text-xs font-bold cursor-pointer hover:underline">{{ comment().displayName }}</p>
+                <p class="text-xs leading-relaxed break-words whitespace-pre-wrap">{{ comment().content }}</p>
+
+                <!-- Reactions -->
+                @if(likesCount() > 0){
+                <div
+                    class="absolute -bottom-2 -right-1 bg-card border border-border/40 rounded-full px-1 py-0.5 flex items-center gap-0.5 shadow-sm">
+                    <div class="flex -space-x-1 items-center">
+                        @for (reaction of reactions(); track reaction.reactionType) {
+                        <span class="text-[10px] leading-none drop-shadow-sm">{{
+                            getEmojiForReaction(reaction.reactionType)
+                            }}</span>
+                        }
+                    </div>
+                    <span class="text-[10px] text-muted-foreground font-medium">{{ likesCount() }}</span>
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="flex items-center gap-3 px-3 mt-0.5 text-[11px] font-bold text-muted-foreground">
+            <div class="relative" (mouseenter)="showReactions.set(true)" (mouseleave)="showReactions.set(false)">
+                <!-- Reactions Menu wrapper with bridge -->
+                @if (showReactions()) {
+                <div class="absolute bottom-full left-0 z-50 pb-2">
+                    <div
+                        class="bg-card border border-border rounded-full shadow-lg flex gap-1 p-0.5 animate-scale-in glass">
+                        @for (reaction of enumService.reactionTypes(); track reaction.id) {
+                        <button type="button" (click)="selectReaction(reaction.id)"
+                            class="w-7 h-7 flex items-center justify-center text-lg hover:scale-125 transition-transform duration-200 cursor-pointer">
+                            {{ reaction.emoji }}
+                        </button>
+                        }
+                    </div>
+                </div>
+                }
+
+                <button (click)="handleLike()" class="hover:underline transition-colors cursor-pointer"
+                    [class]="getReactionById(selectedReaction())?.color ?? 'text-muted-foreground'">
+                    {{ selectedReaction() ? getReactionById(selectedReaction())?.name : lang.t('feed.like') }}
+                </button>
+            </div>
+            <button (click)="showReplyInput.set(!showReplyInput())"
+                class="hover:underline transition-colors cursor-pointer text-muted-foreground">{{ lang.t('feed.reply')
+                }}</button>
+            <span class="font-normal cursor-pointer transition-colors">{{ comment().createdAt | postDate
+                }}</span>
+        </div>
+
+        <!-- Reply Input -->
+        @if(showReplyInput()){
+        <div class="px-3 mt-2">
+            <app-comment-input [placeholder]="lang.t('feed.replyTo') + ' ' + comment().displayName"
+                (submitted)="handleReplySubmit($event)"></app-comment-input>
+        </div>
+        }
+
+        <!-- Replies Section -->
+        @if (comment().repliesCount > 0 || replies().length > 0) {
+        <div class="mt-1">
+            <!-- Show/Hide Toggle -->
+            @if(!showReplies()){
+            <button (click)="getRepliesForComment(comment().id)"
+                class="flex items-center gap-1.5 px-3 py-1 hover:bg-secondary/50 rounded-lg transition-all text-xs font-semibold text-muted-foreground group">
+                <div
+                    class="w-4 h-4 flex items-center justify-center border-l-2 border-b-2 border-border/60 rounded-bl-lg -mt-4 mr-0.5">
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-3.5 h-3.5 cursor-pointer group-hover:scale-110 transition-transform" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M7 10l5 5 5-5" />
+                </svg>
+                <span class="cursor-pointer">{{ replies().length > 0 ? replies().length : comment().repliesCount }} {{
+                    lang.t('feed.reply')
+                    }}{{ (replies().length > 0 ? replies().length : comment().repliesCount) > 1 ? 's' :
+                    ''}}</span>
+            </button>
+            }
+            <!-- Nested Replies -->
+            @if(showReplies()){
+            <div class="space-y-1">
+                @for (reply of replies(); track reply.id) {
+                <app-comment-item [comment]="reply" [postId]="postId()" [contentType]="contentType()"
+                    [isReply]="true"></app-comment-item>
+                }
+                <button (click)="toggleReplies()"
+                    class="px-11 py-1 text-xs font-semibold text-muted-foreground hover:underline cursor-pointer">
+                    {{ lang.t('comments.hideReplies') }}
+                </button>
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>

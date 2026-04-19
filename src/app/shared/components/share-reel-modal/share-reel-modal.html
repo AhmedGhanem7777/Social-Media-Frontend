@@ -1,0 +1,76 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-background/80 backdrop-blur-sm animate-fade-in" (click)="onClose()"></div>
+
+    <!-- Modal Container -->
+    <div
+        class="relative w-full max-w-lg overflow-hidden rounded-xl bg-card border border-border shadow-soft animate-scale-in">
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-border p-4">
+            <h3 class="text-lg font-semibold">{{ lang.t('feed.shareReel') }}</h3>
+            <button (click)="onClose()" class="rounded-lg p-2 hover:bg-accent transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-4 space-y-4 max-h-[70vh] overflow-y-auto scrollbar-thin">
+            <!-- Share Caption Input -->
+            <div class="flex gap-3">
+                <div class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-primary/10">
+                    <img [src]="reel().profilePicture" [alt]="reel().displayName" class="w-full h-full object-cover">
+                </div>
+                <textarea [placeholder]="lang.t('feed.sharePlaceholder')" (input)="onCaptionInput($event)"
+                    class="flex-1 min-h-[100px] bg-transparent border-none focus:ring-0 resize-none text-sm leading-relaxed p-2"
+                    autofocus></textarea>
+            </div>
+
+            <!-- Reel Preview -->
+            <div class="rounded-xl border border-border overflow-hidden bg-accent/20">
+                <div class="flex items-center gap-3 p-3">
+                    <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                        <img [src]="reel().profilePicture" [alt]="reel().displayName"
+                            class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold">{{ reel().displayName }}</p>
+                        <p class="text-[10px] text-muted-foreground">{{ reel().createdAt | postDate }}</p>
+                    </div>
+                </div>
+                <!-- Caption -->
+                @if (reel().caption) {
+                <div class="px-3 pb-3">
+                    <p class="text-xs line-clamp-3 text-muted-foreground">{{ reel().caption }}</p>
+                </div>
+                }
+                <!-- Video thumbnail -->
+                <div class="relative h-40">
+                    <img [src]="reel().thumbnailUrl || reel().videoUrl" class="w-full h-full object-cover bg-black">
+                    <!-- Video Indicator -->
+                    <div class="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
+                        <div class="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white fill-white ml-1" viewBox="0 0 24 24">
+                                <path d="M5 3l14 9-14 9V3z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-end gap-3 border-t border-border p-4 bg-muted/30">
+            <button (click)="onClose()" class="px-4 py-2 text-sm font-medium hover:underline cursor-pointer">
+                {{ lang.t('feed.cancel') }}
+            </button>
+            <button (click)="onShare()" class="inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg 
+                   bg-primary text-primary-foreground text-sm font-semibold transition-all
+                   hover:opacity-90 active:scale-[0.98] disabled:opacity-50 shadow-soft cursor-pointer">
+                {{ lang.t('feed.share') }}
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,88 @@
+<div class="story-backdrop fixed inset-0 bg-black/95 z-[200] flex items-center justify-center"
+    (click)="onBackdropClick($event)">
+
+    <!-- Close Button -->
+    <button type="button" (click)="onClose()"
+        class="cursor-pointer absolute top-4 right-4 z-[210] p-2 text-white/70 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+    </button>
+
+    @if (isLoading()) {
+    <!-- Loading -->
+    <div class="flex flex-col items-center gap-4">
+        <div class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+        <p class="text-white/60 text-sm">{{ lang.t('common.loading') }}</p>
+    </div>
+    } @else if (stories().length === 0) {
+    <!-- No stories -->
+    <div class="flex flex-col items-center gap-3 text-center px-6">
+        <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white/40" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M8 15h8M9 9h.01M15 9h.01" />
+            </svg>
+        </div>
+        <p class="text-white/50 text-sm">{{ lang.t('story.noStories') }}</p>
+    </div>
+    } @else {
+    <!-- Story Viewer -->
+    <div class="story-container" (mousedown)="onHoldStart()" (mouseup)="onHoldEnd()" (mouseleave)="onHoldEnd()"
+        (touchstart)="onHoldStart()" (touchend)="onHoldEnd()">
+
+        <!-- Progress Bars -->
+        <div class="story-progress-bar">
+            @for (story of stories(); track story.id; let i = $index) {
+            <div class="progress-segment">
+                <div class="progress-fill" [class.completed]="i < currentIndex()" [class.active]="i === currentIndex()"
+                    [style.width]="i === currentIndex() ? progress() + '%' : (i < currentIndex() ? '100%' : '0%')">
+                </div>
+            </div>
+            }
+        </div>
+
+        <!-- Header -->
+        <div class="story-header">
+            <div class="flex items-center gap-3">
+                @if (profilePicture()) {
+                <img [src]="profilePicture()" [alt]="displayName()"
+                    class="w-9 h-9 rounded-full object-cover ring-2 ring-white/30" />
+                } @else {
+                <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white/70" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </div>
+                }
+                <div class="flex flex-col">
+                    <span class="text-white font-semibold text-sm">{{ displayName() }}</span>
+                    @if (currentStory()) {
+                    <span class="text-white/50 text-xs">{{ currentStory().createdAt | postDate }}</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Media -->
+        <div class="story-media">
+            @if (currentStory()) {
+            <img [src]="currentStory()!.mediaUrl" [alt]="'Story by ' + displayName()" class="story-image" />
+            }
+        </div>
+
+        <!-- Touch Navigation Zones -->
+        <div class="tap-zone tap-zone-left" (click)="onTapLeft()"></div>
+        <div class="tap-zone tap-zone-right" (click)="onTapRight()"></div>
+
+        <!-- Story Counter -->
+        <div class="story-counter">
+            {{ currentIndex() + 1 }} / {{ stories().length }}
+        </div>
+    </div>
+    }
+</div>

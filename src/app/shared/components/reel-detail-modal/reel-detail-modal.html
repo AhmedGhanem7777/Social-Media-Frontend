@@ -1,0 +1,245 @@
+<div class="backdrop fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 sm:p-6"
+    (click)="onBackdropClick($event)" [dir]="lang.direction()">
+
+    <div
+        class="relative w-full max-w-[400px] max-h-[90vh] aspect-[9/16] flex flex-col items-center animate-in fade-in zoom-in duration-300">
+
+        <!-- Close Button -->
+        <button type="button" (click)="onClose()"
+            class="cursor-pointer absolute -top-12 end-0 p-2 text-white/70 hover:text-white transition-colors focus:outline-none z-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+        </button>
+
+        <!-- Content Container -->
+        <div
+            class="w-full h-full rounded-2xl shadow-2xl overflow-hidden bg-black relative flex items-center justify-center">
+            @if (item()) {
+
+            <!-- Video background -->
+            <video #videoPlayer [src]="item()!.videoUrl" [poster]="posterUrl()" loop playsinline
+                class="absolute inset-0 w-full h-full object-cover">
+            </video>
+
+            <!-- Gradient overlays -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60"></div>
+
+            <!-- Play/Pause tap overlay -->
+            <button type="button"
+                class="absolute inset-0 flex items-center justify-center z-10 w-full h-full cursor-pointer bg-transparent border-0"
+                (click)="togglePlay()" aria-label="Toggle play">
+                @if (!isPlaying()) {
+                <div class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm
+                            flex items-center justify-center animate-scale-in">
+                    <!-- Play icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white fill-white ms-1"
+                        viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                </div>
+                }
+            </button>
+
+            <!-- Right-side actions -->
+            <div class="absolute end-3 bottom-20 flex flex-col items-center gap-5 z-20">
+
+                <!-- Like with reactions -->
+                <div class="relative" (mouseenter)="showReactions.set(true)" (mouseleave)="showReactions.set(false)">
+
+                    <!-- Reactions popup -->
+                    @if (showReactions()) {
+                    <div class="absolute bottom-full end-0 z-50 pb-2">
+                        <div
+                            class="bg-black/70 backdrop-blur-md border border-white/20 rounded-full shadow-lg flex gap-1 p-1 animate-scale-in">
+                            @for (reaction of enumService.reactionTypes(); track reaction.id) {
+                            <button type="button" (click)="selectReaction(reaction.id)"
+                                class="w-9 h-9 flex items-center justify-center text-xl hover:scale-125 transition-transform duration-200 cursor-pointer bg-transparent border-0">
+                                {{ reaction.emoji }}
+                            </button>
+                            }
+                        </div>
+                    </div>
+                    }
+
+                    <button type="button" (click)="handleLike()"
+                        class="flex flex-col items-center gap-1 cursor-pointer bg-transparent border-0"
+                        aria-label="Like">
+                        <div
+                            class="w-10 h-10 rounded-full backdrop-blur-sm flex items-center justify-center transition-all bg-white/10">
+                            @if (selectedReaction()) {
+                            <span class="text-xl animate-bounce-subtle">{{ getReactionById(selectedReaction())?.emoji
+                                }}</span>
+                            } @else {
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 transition-all text-white fill-none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                            </svg>
+                            }
+                        </div>
+                        <span class="text-white text-xs font-medium">{{ likeCount() }}</span>
+                    </button>
+                </div>
+
+                <!-- Comment -->
+                <button type="button" (click)="toggleComments()"
+                    class="flex flex-col items-center gap-1 cursor-pointer bg-transparent border-0"
+                    aria-label="Comment">
+                    <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </div>
+                    <span class="text-white text-xs font-medium">{{ commentsCount() }}</span>
+                </button>
+
+                <!-- Share -->
+                <button type="button" class="flex flex-col items-center gap-1 cursor-pointer bg-transparent border-0"
+                    aria-label="Share">
+                    <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" />
+                            <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
+                        </svg>
+                    </div>
+                    <span class="text-white text-xs font-medium">{{ sharesCount() }}</span>
+                </button>
+
+                <!-- Save / Bookmark -->
+                <button type="button" (click)="toggleSave()"
+                    class="flex flex-col items-center gap-1 cursor-pointer bg-transparent border-0" aria-label="Save">
+                    <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-all"
+                            [class.text-primary]="isSaved()" [class.text-white]="!isSaved()"
+                            [class.fill-current]="isSaved()" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                        </svg>
+                    </div>
+                </button>
+
+                <!-- Mute / Unmute -->
+                <button type="button" (click)="toggleMute()" class="cursor-pointer bg-transparent border-0"
+                    aria-label="Toggle mute">
+                    <div class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                        @if (isMuted()) {
+                        <!-- VolumeX -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                            <line x1="22" x2="16" y1="9" y2="15" />
+                            <line x1="16" x2="22" y1="9" y2="15" />
+                        </svg>
+                        } @else {
+                        <!-- Volume2 -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                        </svg>
+                        }
+                    </div>
+                </button>
+            </div>
+
+            <!-- Bottom info (user profile on left) -->
+            <div class="absolute bottom-6 start-4 end-16 z-20 pointer-events-none">
+                <div class="flex items-center gap-2 mb-2 pointer-events-auto">
+                    <!-- User avatar on the left -->
+                    <div (click)="navigateToProfile(currentUserId || '')"
+                        class="cursor-pointer w-10 h-10 rounded-full ring-2 ring-white overflow-hidden shadow-lg flex-shrink-0">
+                        @if (currentProfilePicture && currentProfilePicture !==
+                        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face') {
+                        <img [src]="currentProfilePicture" [alt]="currentDisplayName"
+                            class="w-full h-full object-cover" />
+                        } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="w-full h-full p-2 text-muted-foreground" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        }
+                    </div>
+                    <span class="font-bold text-white drop-shadow-md">&#64;{{ (item()?.isShared ?
+                        item()?.sharedByDisplayName : (item()?.displayName || item()?.userName)) }}</span>
+                    <!-- Follow button -->
+                    <button type="button" class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md
+                         text-xs font-medium ring-offset-background transition-all duration-300
+                         border border-white/50 bg-transparent text-white hover:bg-white/20
+                         h-6 px-2 cursor-pointer">
+                        {{ lang.t('common.follow') }}
+                    </button>
+                </div>
+                <p class="text-white text-sm line-clamp-2 drop-shadow-md">{{ item()!.caption }}</p>
+                @if (item()!.createdAt) {
+                <p class="text-white/70 text-xs mt-1 drop-shadow-md">{{ item()!.createdAt | date:'mediumDate' }}</p>
+                }
+
+                <!-- Reaction emojis summary -->
+                @if (reactions().length > 0) {
+                <div class="flex items-center gap-1 mt-2 pointer-events-auto cursor-pointer hover:underline"
+                    (click)="toggleUserReactionsModal()">
+                    <div class="flex -space-x-1 items-center">
+                        @for (reaction of reactions(); track reaction.reactionType) {
+                        <span class="text-sm leading-none drop-shadow-sm">{{ getEmojiForReaction(reaction.reactionType)
+                            }}</span>
+                        }
+                    </div>
+                    @if (likeCount() > 0) {
+                    <span class="text-white/70 text-xs">{{ likeCount() }}</span>
+                    }
+                </div>
+                }
+            </div>
+
+            <!-- Comments panel -->
+            @if (showComments()) {
+            <div class="comments-panel absolute bottom-0 left-0 right-0 z-30 bg-black/90 backdrop-blur-md rounded-t-2xl"
+                (click)="$event.stopPropagation()">
+                <!-- Panel header -->
+                <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                    <h3 class="text-white font-semibold text-sm">{{ lang.t('reel.comments') }} ({{ commentsCount() }})
+                    </h3>
+                    <button type="button" (click)="toggleComments()"
+                        class="cursor-pointer bg-transparent border-0 text-white/70 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Comments body -->
+                <div class="comments-body overflow-y-auto px-4 py-2">
+                    <app-comments [contentType]="2" [postId]="item()!.id"
+                        (commentCountChange)="commentsCount.set($event)"></app-comments>
+                </div>
+            </div>
+            }
+
+            } @else {
+            <div class="flex-1 flex flex-col items-center justify-center gap-3 py-10 w-full h-full bg-black">
+                <div class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (showUserReactionsModal()) {
+<app-reactions-modal [contentId]="reelId()" [contentType]="2"
+    (close)="showUserReactionsModal.set(false)"></app-reactions-modal>
+}

@@ -1,0 +1,291 @@
+<div class="h-[calc(100vh-4rem-4rem)] lg:h-[calc(100vh-4rem)] flex" [dir]="lang.direction()">
+
+    <!-- Conversations List -->
+    <div class="w-full md:w-80 lg:w-96 border-e border-border flex flex-col bg-card" [class.hidden]="showMobileChat()"
+        [class.md:flex]="true">
+        <!-- Header -->
+        <div class="p-4 border-b border-border">
+            <h1 class="text-xl font-bold">{{ lang.t('chat.messages') }}</h1>
+        </div>
+
+        <!-- Conversation Items -->
+        <div class="flex-1 overflow-y-auto scrollbar-thin">
+            @for (conv of usersChat(); track conv.userId; let i = $index) {
+            <button type="button" (click)="selectConversation(conv)"
+                class="cursor-pointer w-full flex items-center gap-3 p-4 hover:bg-accent transition-colors animate-fade-in text-start"
+                [class.bg-accent]="selectedChat()?.userId === conv.userId" [style.animation-delay]="i * 50 + 'ms'">
+                <!-- Avatar with online indicator -->
+                <div class="relative shrink-0">
+                    <div
+                        class="w-12 h-12 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center">
+                        @if (conv.userAvatar && conv.userAvatar !==
+                        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face') {
+                        <img [src]="conv.userAvatar" [alt]="conv.userName" class="w-full h-full object-cover" />
+                        } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full p-2.5 text-muted-foreground"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        }
+                    </div>
+                    @if (conv.isOnline) {
+                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-card">
+                    </div>
+                    }
+                </div>
+
+                <!-- Text info -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-sm">{{ conv.userName || 'Unknown User' }}</span>
+                        <span class="text-xs text-muted-foreground">{{ (conv.lastMessageTime || 'N/A') | postDate
+                            }}</span>
+                    </div>
+                    <p class="text-sm text-muted-foreground truncate">{{ conv.lastMessage || 'No messages yet' }}</p>
+                </div>
+
+                <!-- Unread badge -->
+                @if (conv.unreadCount > 0) {
+                <div class="w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs
+                              flex items-center justify-center font-medium shrink-0">
+                    {{ conv.unreadCount }}
+                </div>
+                }
+            </button>
+            }
+        </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="flex-1 flex flex-col bg-background" [class.hidden]="!showMobileChat()" [class.md:flex]="true">
+        @if (selectedChat(); as selected) {
+        <!-- Chat Header -->
+        <div class="flex items-center justify-between p-4 border-b border-border bg-card">
+            <div class="flex items-center gap-3">
+
+                <!-- Back button (mobile only) -->
+                <button type="button" class="md:hidden inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg
+                       text-sm font-medium ring-offset-background transition-all duration-300
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                       disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]
+                       hover:bg-accent hover:text-accent-foreground h-10 w-10" (click)="showMobileChat.set(false)"
+                    [aria-label]="lang.t('chat.back')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 rtl:rotate-180" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M19 12H5" />
+                        <path d="m12 19-7-7 7-7" />
+                    </svg>
+                </button>
+
+                <!-- Active chat user info -->
+                <div
+                    class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-border bg-muted flex items-center justify-center">
+                    @if (selected.userAvatar && selected.userAvatar !==
+                    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face') {
+                    <img [src]="selected.userAvatar" [alt]="selected.userName" class="w-full h-full object-cover" />
+                    } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full p-2 text-muted-foreground"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    }
+                </div>
+                <div>
+                    <p class="font-semibold text-sm">{{ selected.userName }}</p>
+                    <p class="text-xs" [class]="selected.isOnline ? 'text-green-500' : 'text-muted-foreground'">
+                        {{ selected.isOnline ? lang.t('chat.online') : lang.t('chat.offline') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div #messagesContainer class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+            @if (loadingMessages()) {
+            <!-- Loading skeleton -->
+            @for (i of [1,2,3,4,5]; track i) {
+            <div class="flex" [class]="i % 2 === 0 ? 'justify-end' : 'justify-start'">
+                <div class="max-w-[70%] px-4 py-2.5 rounded-2xl bg-muted animate-pulse">
+                    <div class="h-4 w-32 bg-muted-foreground/20 rounded"></div>
+                    <div class="h-3 w-16 bg-muted-foreground/10 rounded mt-1"></div>
+                </div>
+            </div>
+            }
+            } @else {
+            @for (msg of messages(); track msg.messageId; let i = $index) {
+            <div class="flex animate-fade-in gap-2" [class]="isMyMessage(msg) ? 'justify-end' : 'justify-start'"
+                [style.animation-delay]="i * 50 + 'ms'">
+
+                <!-- Sender avatar -->
+                @if (!isMyMessage(msg)) {
+                <div
+                    class="w-8 h-8 rounded-full overflow-hidden shrink-0 mt-auto border border-border bg-muted flex items-center justify-center">
+                    @if (msg.senderAvatar) {
+                    <img [src]="msg.senderAvatar" [alt]="msg.senderName" class="w-full h-full object-cover" />
+                    } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full p-1.5 text-muted-foreground"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    }
+                </div>
+                }
+
+                <div class="max-w-[70%]">
+                    <!-- Sender name -->
+                    @if (!isMyMessage(msg)) {
+                    <p class="text-xs text-muted-foreground mb-1 ms-1">{{ msg.senderName }}</p>
+                    }
+
+                    <div class="relative group px-4 py-2.5"
+                        [class]="isMyMessage(msg) ? 'message-sent' : 'message-received'"
+                        (click)="activeMenuId.set(activeMenuId() === msg.messageId ? null : msg.messageId)">
+
+                        <p class="text-sm">{{ msg.content }}</p>
+
+                        <!-- Actions bar -->
+                        <div class="absolute top-0 bottom-0 flex items-center gap-1 px-2 transition-all duration-300"
+                            [class.opacity-0]="activeMenuId() !== msg.messageId" [class.group-hover:opacity-100]="true"
+                            [class]="isMyMessage(msg) ? '-left-8' : '-right-8'">
+
+                            <!-- Delete button -->
+                            @if (isMyMessage(msg)) {
+                            <button
+                                (click)="$event.stopPropagation(); deleteMessage(msg.messageId); activeMenuId.set(null)"
+                                class="p-1.5 hover:bg-destructive/10 hover:text-destructive rounded-full text-muted-foreground transition-colors bg-background/50 backdrop-blur-sm border border-border shadow-sm"
+                                [title]="lang.t('friends.delete')">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M3 6h18" />
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    <line x1="10" x2="10" y1="11" y2="17" />
+                                    <line x1="14" x2="14" y1="11" y2="17" />
+                                </svg>
+                            </button>
+                            }
+                        </div>
+
+                        <!-- Reactions -->
+                        @if (msg.reactions && msg.reactions.length > 0) {
+                        <div class="flex gap-1 mt-1">
+                            @for (reaction of msg.reactions; track $index) {
+                            <span class="text-xs">{{ reaction }}</span>
+                            }
+                        </div>
+                        }
+
+                        <div class="flex items-center gap-2 mt-1"
+                            [class]="isMyMessage(msg) ? 'justify-end' : 'justify-start'">
+                            <span class="text-[10px]"
+                                [class]="isMyMessage(msg) ? 'text-primary-foreground/70' : 'text-muted-foreground'"
+                                [title]="msg.sentAt | date:'medium'">
+                                {{ msg.sentAt | postDate }}
+                            </span>
+
+                            <!-- Read status -->
+                            @if (isMyMessage(msg)) {
+                            <div class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0"
+                                    [class]="msg.isRead ? 'text-blue-300' : 'text-primary-foreground/50'"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    @if (msg.isRead) {
+                                    <path d="M18 6 7 17l-5-5" />
+                                    <path d="m22 10-9.5 9.5L10 17" />
+                                    } @else {
+                                    <path d="M20 6 9 17l-5-5" />
+                                    }
+                                </svg>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (messages().length === 0) {
+            <div class="flex-1 flex items-center justify-center text-muted-foreground text-sm py-8">
+                {{ lang.t('chat.noMessages') }}
+            </div>
+            }
+            }
+
+            <!-- Sending Indicator -->
+            @if (sendingMessage()) {
+            <div class="flex justify-end">
+                <div class="message-sent px-4 py-3 opacity-60">
+                    <div class="flex gap-1">
+                        <span class="w-2 h-2 rounded-full bg-primary-foreground/70 animate-typing"></span>
+                        <span class="w-2 h-2 rounded-full bg-primary-foreground/70 animate-typing"
+                            style="animation-delay:0.2s"></span>
+                        <span class="w-2 h-2 rounded-full bg-primary-foreground/70 animate-typing"
+                            style="animation-delay:0.4s"></span>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+
+        <!-- Message Input -->
+        <div class="p-4 border-t border-border bg-card">
+            <div class="flex items-center gap-2">
+                <!-- Text input -->
+                <div class="flex-1 relative">
+                    <input type="text" [(ngModel)]="messageText" [placeholder]="lang.t('chat.sendMessage')"
+                        (keyup.enter)="sendMessage()" class="flex w-full h-11 rounded-full border-transparent ring-offset-background transition-all duration-300
+                         placeholder:text-muted-foreground focus-visible:outline-none
+                         disabled:cursor-not-allowed disabled:opacity-50 md:text-sm
+                         bg-secondary focus-visible:bg-background
+                         focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary
+                         px-4" />
+                </div>
+
+                <!-- Send -->
+                <button type="button" (click)="sendMessage()" [disabled]="!messageText.trim() || sendingMessage()"
+                    class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg
+                       text-sm font-medium ring-offset-background transition-all duration-300
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                       disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]
+                       bg-gradient-primary text-white hover:opacity-90 hover:shadow-glow
+                       h-10 w-10" [aria-label]="lang.t('chat.send')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0 rtl:rotate-180" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="m22 2-7 20-4-9-9-4Z" />
+                        <path d="M22 2 11 13" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        } @else {
+        <!-- Landing State -->
+        <div
+            class="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
+            <div
+                class="w-24 h-24 mb-6 rounded-3xl bg-gradient-primary/10 flex items-center justify-center text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-foreground mb-2">{{ lang.t('chat.noSelectionTitle') }}</h2>
+            <p class="text-muted-foreground max-w-md mx-auto">{{ lang.t('chat.noSelectionSubtitle') }}</p>
+
+            <!-- Decoration background -->
+            <div
+                class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,_var(--primary)_0%,_transparent_70%)] opacity-[0.03]">
+            </div>
+        </div>
+        }
+    </div>
+</div>

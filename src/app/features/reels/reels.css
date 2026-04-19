@@ -1,0 +1,99 @@
+@keyframes progress-fast {
+    from {
+        width: 0%;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(100%);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes scale-in {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-progress-fast {
+    animation: progress-fast 10s linear infinite;
+}
+
+.animate-slide-up {
+    animation: slide-up 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.animate-marquee {
+    animation: marquee 8s linear infinite;
+}
+
+.animate-scale-in {
+    animation: scale-in 0.2s ease-out;
+}
+
+.animate-spin-slow {
+    animation: spin-slow 4s linear infinite;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Glassmorphism utility */
+.glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Custom shadow for indicators */
+.indicator-shadow {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Snap scrolling smoothness */
+#scrollContainer {
+    scroll-behavior: smooth;
+    overscroll-behavior-y: contain;
+}

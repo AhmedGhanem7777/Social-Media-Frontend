@@ -1,0 +1,8 @@
+.shared-post-embed {
+  background-color: var(--secondary, hsl(0 0% 96%));
+  transition: background-color 0.2s ease;
+}
+
+.shared-post-embed:hover {
+  background-color: var(--accent, hsl(0 0% 93%));
+}

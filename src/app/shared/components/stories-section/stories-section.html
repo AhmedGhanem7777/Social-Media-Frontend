@@ -1,0 +1,90 @@
+<div class="w-full">
+    <div class="flex gap-4 overflow-x-auto scrollbar-hide px-1 py-2">
+        <!-- Own Story (Fixed) -->
+        <button type="button" class="flex flex-col items-center gap-2 flex-shrink-0 group animate-fade-in"
+            (click)="ownStory() ? onStoryClick(ownStory()!, $event) : openCreateStory()">
+            <div class="relative">
+                <!-- Story ring -->
+                <div class="rounded-full p-[3px] transition-transform duration-300 group-hover:scale-105"
+                    [class]="ownStory() ? storyRingClass(ownStory()!) : 'bg-border'">
+                    <div class="rounded-full bg-background p-[2px] cursor-pointer">
+                        @if (currentUserProfilePicture() && currentUserProfilePicture() !==
+                        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face') {
+                        <img [src]="currentUserProfilePicture()" [alt]="lang.t('feed.yourStory')"
+                            class="w-16 h-16 rounded-full object-cover" />
+                        } @else {
+                        <div class="w-16 h-16 rounded-full text-muted-foreground flex items-center justify-center p-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Add button -->
+                <div class="create-story-btn absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary
+                            flex items-center justify-center border-2 border-background shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary-foreground" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                    </svg>
+                </div>
+            </div>
+
+            <span class="text-xs font-medium text-foreground max-w-16 truncate">
+                {{ lang.t('feed.yourStory') }}
+            </span>
+        </button>
+
+        <!-- Other Stories -->
+        @for (story of otherStories(); track story.userId; let i = $index) {
+        <button type="button" class="flex flex-col items-center gap-2 flex-shrink-0 group animate-fade-in"
+            [style.animation-delay]="(i + 1) * 50 + 'ms'" (click)="onStoryClick(story, $event)">
+            <div class="relative">
+                <div class="rounded-full p-[3px] transition-transform duration-300 group-hover:scale-105"
+                    [class]="storyRingClass(story)">
+                    <div class="rounded-full bg-background p-[2px] cursor-pointer">
+                        @if (story.profilePicture && story.profilePicture !==
+                        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face') {
+                        <img [src]="story.profilePicture" [alt]="story.displayName"
+                            class="w-16 h-16 rounded-full object-cover" />
+                        } @else {
+                        <div class="w-16 h-16 rounded-full text-muted-foreground flex items-center justify-center p-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Online indicator -->
+                <div class="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-background">
+                </div>
+            </div>
+
+            <span class="text-xs font-medium text-foreground max-w-16 truncate">
+                {{ story.displayName }}
+            </span>
+        </button>
+        }
+    </div>
+</div>
+
+<!-- Story Viewer Modal -->
+@if (showStoryViewer() && selectedUser()) {
+<app-story-view-modal [userId]="selectedUser()!.userId" [displayName]="selectedUser()!.displayName"
+    [profilePicture]="selectedUser()!.profilePicture" (close)="closeStoryViewer()" />
+}
+
+<!-- Create Story Modal -->
+@if (showCreateStory()) {
+<app-create-story (close)="closeCreateStory()" />
+}

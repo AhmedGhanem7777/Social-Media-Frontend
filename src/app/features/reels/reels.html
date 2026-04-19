@@ -1,0 +1,238 @@
+<div class="fixed inset-0 bg-black overflow-hidden" [dir]="lang.direction()">
+
+    <!-- Scroll container -->
+    <div #scrollContainer class="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+        @for (reel of reels(); track reel.id; let index = $index) {
+        <div class="h-full w-full snap-start relative flex items-center justify-center bg-black">
+
+            <!-- Real Video Element -->
+            <video #reelVideo [src]="reel.videoUrl" [poster]="reel.thumbnailUrl || ''" loop playsinline
+                class="absolute inset-0 w-full h-full object-contain md:object-cover" [muted]="isMuted()"
+                (click)="togglePlay()">
+            </video>
+
+            <!-- Gradient overlays -->
+            <div
+                class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none">
+            </div>
+
+            <!-- Play/Pause tap overlay feedback -->
+            <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                @if (!isPlaying() && activeIndex() === index) {
+                <div class="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md
+                            flex items-center justify-center animate-scale-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white fill-white ms-1"
+                        viewBox="0 0 24 24">
+                        <path d="M5 3l14 9-14 9V3z" />
+                    </svg>
+                </div>
+                }
+            </div>
+
+            <!-- Right-side actions -->
+            <div class="absolute end-4 bottom-24 flex flex-col items-center gap-5 z-20">
+
+                <!-- Like -->
+                <button type="button"
+                    class="cursor-pointer flex flex-col items-center gap-1 group hover:-translate-y-1 hover:scale-105 transition-all duration-300"
+                    (click)="toggleLike(reel)" aria-label="Like">
+                    <div class="w-12 h-12 rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-300
+                         group-active:scale-125" [class]="reel.isLikedByCurrentUser ? 'bg-red-500/20' : 'bg-white/10'">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 transition-all duration-300"
+                            viewBox="0 0 24 24" [attr.stroke]="reel.isLikedByCurrentUser ? 'none' : 'currentColor'"
+                            stroke-width="2" [attr.fill]="reel.isLikedByCurrentUser ? '#ef4444' : 'none'">
+                            <path
+                                d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                        </svg>
+                    </div>
+                    <span class="text-white text-xs font-semibold drop-shadow-md">{{ reel.likesCount }}</span>
+                </button>
+
+                <!-- Comment -->
+                <button type="button"
+                    class="cursor-pointer flex flex-col items-center gap-1 group hover:-translate-y-1 hover:scale-105 transition-all duration-300"
+                    (click)="toggleComments()" aria-label="Comment">
+                    <div
+                        class="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center transition-all duration-300 group-active:scale-110">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </div>
+                    <span class="text-white text-xs font-semibold drop-shadow-md">{{ reel.commentsCount }}</span>
+                </button>
+
+                <!-- Share -->
+                <button type="button"
+                    class="cursor-pointer flex flex-col items-center gap-1 group hover:-translate-y-1 hover:scale-105 transition-all duration-300"
+                    (click)="toggleShareModal()" aria-label="Share">
+                    <div
+                        class="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center transition-all duration-300 group-active:scale-110">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white rotate-[-25deg]"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </div>
+                    <span class="text-white text-xs font-semibold drop-shadow-md">{{ lang.t('feed.share') }}</span>
+                </button>
+
+                <!-- Save -->
+                <button type="button"
+                    class="cursor-pointer flex flex-col items-center gap-1 group hover:-translate-y-1 hover:scale-105 transition-all duration-300"
+                    (click)="toggleSave(reel)" aria-label="Save">
+                    <div class="w-12 h-12 rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-300
+                         group-active:scale-110"
+                        [class]="reel.isSavedByCurrentUser ? 'bg-yellow-500/20' : 'bg-white/10'">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 transition-all duration-300"
+                            viewBox="0 0 24 24" [attr.stroke]="reel.isSavedByCurrentUser ? 'none' : 'currentColor'"
+                            stroke-width="2" [attr.fill]="reel.isSavedByCurrentUser ? '#eab308' : 'none'">
+                            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+                        </svg>
+                    </div>
+                </button>
+
+                <!-- Mute / Unmute -->
+                <button type="button" (click)="toggleMute()" aria-label="Toggle mute"
+                    class="cursor-pointer group hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+                    <div
+                        class="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center transition-all duration-300 group-active:scale-110">
+                        @if (isMuted()) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="23" y1="9" x2="17" y2="15"></line>
+                            <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                        } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                        }
+                    </div>
+                </button>
+
+                <!-- User avatar -->
+                <div class="relative mt-2">
+                    <div
+                        class="w-10 h-10 rounded-full ring-2 ring-white overflow-hidden shadow-lg shadow-black/50 flex-shrink-0">
+                        @if (reel.profilePicture && reel.profilePicture !==
+                        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face') {
+                        <img [routerLink]="['/profile', reel.userId]" [src]="reel.profilePicture"
+                            [alt]="reel.displayName" class="w-full h-full object-cover cursor-pointer" />
+                        } @else {
+                        <svg [routerLink]="['/profile', reel.userId]" xmlns="http://www.w3.org/2000/svg"
+                            class="w-full h-full p-2 text-muted-foreground cursor-pointer" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        }
+                    </div>
+                    @if (reel.userId !== currentUserId && !reel.isFollow && !reel.isShared &&
+                    !requestedUserIds().has(reel.userId)) {
+                    <div (click)="sendFriendRequest(reel.userId)"
+                        class="absolute -bottom-1 left-1/2 -translate-x-1/2
+                            w-5 h-5 rounded-full bg-blue-500
+                            flex items-center justify-center text-white text-xs font-bold ring-2 ring-black transition-transform hover:scale-110 cursor-pointer">
+                        +
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Bottom info -->
+            <div class="absolute bottom-8 start-4 end-20 z-20">
+                <div class="flex items-center gap-3 mb-3">
+                    <span [routerLink]="['/profile', reel.userId]"
+                        class="font-bold text-white text-lg drop-shadow-lg cursor-pointer hover:underline">&#64; {{
+                        reel.userName }}</span>
+                    @if (reel.userId !== currentUserId && !reel.isFollow && !reel.isShared &&
+                    !requestedUserIds().has(reel.userId)) {
+                    <button type="button" (click)="sendFriendRequest(reel.userId)"
+                        class="cursor-pointer px-3 py-1 rounded-full border border-white/50 bg-white/10
+                                 text-white text-xs font-bold backdrop-blur-md hover:bg-white/20 hover:scale-105 active:scale-95 transition-all">
+                        {{ lang.t('common.follow') }}
+                    </button>
+                    }
+                </div>
+                <p class="text-white text-sm line-clamp-2 drop-shadow-md leading-relaxed">{{ reel.caption }}</p>
+
+                <!-- Music / Audio info -->
+                <div class="flex items-center gap-2 mt-4 text-white/90 text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 animate-spin-slow" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18V5l12-2v13"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="18" cy="16" r="3"></circle>
+                    </svg>
+                    <span class="overflow-hidden whitespace-nowrap">
+                        <span class="inline-block animate-marquee">{{ lang.t('reels.originalAudio') }} - &#64;{{
+                            reel.userName }}</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Progress indicators -->
+            <div class="absolute top-4 left-0 right-0 flex gap-1.5 px-3 z-30">
+                @for (r of reels(); track r.id; let i = $index) {
+                <div class="flex-1 h-0.5 rounded-full overflow-hidden bg-white/20 backdrop-blur-sm">
+                    @if (i === index && isPlaying()) {
+                    <div
+                        class="h-full bg-white rounded-full animate-progress-fast shadow-[0_0_8px_rgba(255,255,255,0.8)]">
+                    </div>
+                    } @else if (i < index) { <div class="h-full bg-white/80 rounded-full">
+                </div> }
+            </div>
+            }
+        </div>
+
+    </div>
+    }
+
+    @if (loading()) {
+    <div class="h-full w-full flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+    </div>
+    }
+</div>
+
+<!-- Back button -->
+<button type="button" (click)="goBack()"
+    class="cursor-pointer absolute top-8 start-4 z-40 w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center hover:bg-black/40 hover:scale-110 active:scale-90 transition-all border border-white/10">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+</button>
+
+<!-- Modals / Overlays -->
+
+<!-- Comments Overlay -->
+@if (showComments()) {
+<div class="absolute inset-0 z-50 flex flex-col pt-20 animate-slide-up">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]" (click)="toggleComments()"></div>
+    <div class="mt-auto h-[75vh] w-full max-w-md mx-auto bg-[#1a1a1a] rounded-t-[32px] overflow-hidden flex flex-col relative
+                    border-x border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto my-4 shrink-0"></div>
+        <div class="flex-1 overflow-y-auto px-4 pb-10">
+            <app-comments [postId]="reels()[activeIndex()].id" [contentType]="2"></app-comments>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Share Modal -->
+@if (showShareModal()) {
+<app-share-reel-modal [reel]="reels()[activeIndex()]" (close)="toggleShareModal()"
+    (share)="shareReel($event)"></app-share-reel-modal>
+}
+
+</div>

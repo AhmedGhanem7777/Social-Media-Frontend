@@ -1,0 +1,81 @@
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 animate-fade-in mask-blur">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-background/80 backdrop-blur-sm" (click)="onClose()"></div>
+
+    <!-- Modal Container -->
+    <div
+        class="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl overflow-hidden animate-scale-in glass">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 border-b border-border bg-muted/30">
+            <h2 class="text-lg font-semibold">{{ lang.t('reactions.title') }}</h2>
+            <button type="button" (click)="onClose()"
+                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- User List -->
+        <div class="max-h-[60vh] overflow-y-auto p-2 space-y-1 scrollbar-thin" (scroll)="onScroll($event)">
+            @for (user of users(); track user.userId) {
+            <div class="flex items-center gap-3 p-2 rounded-xl transition-all group cursor-pointer">
+                <!-- Avatar -->
+                <div class="relative flex-shrink-0">
+                    <div
+                        class="w-12 h-12 rounded-full ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all overflow-hidden">
+                        @if (user.profilePicture) {
+                        <img [src]="user.profilePicture" [alt]="user.displayName" class="w-full h-full object-cover" />
+                        } @else {
+                        <div class="w-full h-full bg-muted flex items-center justify-center text-muted-foreground p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="w-full h-full">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Name -->
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm truncate">{{ user.displayName }}</p>
+                </div>
+
+                <!-- View Profile -->
+                <button (click)="navigateToProfile(user.userId)" type="button"
+                    class="px-4 py-1.5 rounded-lg text-xs font-medium border border-border cursor-pointer hover:bg-accent transition-colors active:scale-95">
+                    {{ lang.t('common.viewProfile') }}
+                </button>
+            </div>
+            } @empty {
+            @if (loading()) {
+            <div class="py-12 flex flex-col items-center justify-center text-muted-foreground">
+                <div class="loading-spinner mb-3"></div>
+                <p class="text-sm">{{ lang.t('reactions.loading') }}</p>
+            </div>
+            } @else {
+            <div class="py-12 flex flex-col items-center justify-center text-muted-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mb-2 opacity-20" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                </svg>
+                <p class="text-sm">{{ lang.t('reactions.empty') }}</p>
+            </div>
+            }
+            }
+
+            <!-- Load more indicator -->
+            @if (loading() && users().length > 0) {
+            <div class="py-4 flex justify-center">
+                <div class="loading-spinner"></div>
+            </div>
+            }
+        </div>
+    </div>
+</div>

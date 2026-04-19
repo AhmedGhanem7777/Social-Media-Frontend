@@ -1,0 +1,33 @@
+:host {
+    display: block;
+}
+
+/* Custom rounded corner for the bubble based on side */
+[dir="ltr"] .rounded-2xl {
+    border-top-left-radius: 4px;
+}
+
+[dir="rtl"] .rounded-2xl {
+    border-top-right-radius: 4px;
+}
+
+/* Action buttons styling */
+button:active {
+    transform: scale(0.95);
+}
+
+/* Animations */
+.animate-in {
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
